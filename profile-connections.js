@@ -41,6 +41,7 @@ class ProfileManager {
         };
         this.renderConnections();
         this.updateNotificationBadge();
+        this.updateFindConnectionsButton();
       }
     } catch (error) {
       console.error('Error loading connections:', error);
@@ -56,6 +57,7 @@ class ProfileManager {
     connectionsHeader.innerHTML = `
       <h2>Connections</h2>
       <div class="notification-container">
+        <span id="connection-count" style="color: rgba(255,255,255,0.8); margin-right: 10px;">0/5</span>
         <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
       </div>
     `;
@@ -133,6 +135,16 @@ class ProfileManager {
     // Update counts
     document.getElementById('pending-count').textContent = this.connections.pending.length;
     document.getElementById('sent-count').textContent = this.connections.sent.length;
+    document.getElementById('connection-count').textContent = `${this.connections.accepted.length}/5`;
+    
+    // Update connection count color based on limit
+    const connectionCountEl = document.getElementById('connection-count');
+    if (this.connections.accepted.length >= 5) {
+      connectionCountEl.style.color = '#ff4444';
+      connectionCountEl.textContent = '5/5 (FULL)';
+    } else {
+      connectionCountEl.style.color = 'rgba(255,255,255,0.8)';
+    }
   }
 
   getEmptyStateMessage(tab) {
@@ -246,8 +258,7 @@ class ProfileManager {
     // Add team member button (now "Find Connections")
     const addBtn = document.getElementById('add-team-member-btn');
     if (addBtn) {
-      addBtn.textContent = 'Find New Connections';
-      addBtn.onclick = () => this.openConnectionsModal();
+      this.updateFindConnectionsButton();
     }
   }
 
@@ -332,6 +343,23 @@ class ProfileManager {
       }
     } catch (error) {
       this.showNotification('Error sending connection request', 'error');
+    }
+  }
+
+  updateFindConnectionsButton() {
+    const addBtn = document.getElementById('add-team-member-btn');
+    if (!addBtn) return;
+
+    if (this.connections.accepted.length >= 5) {
+      addBtn.textContent = 'Connections Full (5/5)';
+      addBtn.style.background = '#6c757d';
+      addBtn.style.cursor = 'not-allowed';
+      addBtn.onclick = () => this.showNotification('You have reached the maximum limit of 5 connections', 'error');
+    } else {
+      addBtn.textContent = 'Find New Connections';
+      addBtn.style.background = 'linear-gradient(135deg, #00f2fe, #4facfe)';
+      addBtn.style.cursor = 'pointer';
+      addBtn.onclick = () => this.openConnectionsModal();
     }
   }
 

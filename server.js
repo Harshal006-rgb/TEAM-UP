@@ -88,6 +88,15 @@ app.post("/connections/request", (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Check connection limits (max 5 connections)
+    if (fromUser.connections.length >= 5) {
+      return res.status(400).json({ message: "You have reached the maximum limit of 5 connections" });
+    }
+
+    if (toUser.connections.length >= 5) {
+      return res.status(400).json({ message: "This user has reached their connection limit" });
+    }
+
     // Check if request already exists
     if (toUser.pendingRequests.includes(fromUserId) || fromUser.sentRequests.includes(toUserId)) {
       return res.status(400).json({ message: "Request already sent" });
@@ -116,6 +125,15 @@ app.post("/connections/accept", (req, res) => {
     
     if (!user || !requester) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check connection limits (max 5 connections)
+    if (user.connections.length >= 5) {
+      return res.status(400).json({ message: "You have reached the maximum limit of 5 connections" });
+    }
+
+    if (requester.connections.length >= 5) {
+      return res.status(400).json({ message: "The other user has reached their connection limit" });
     }
 
     // Remove from pending/sent requests
